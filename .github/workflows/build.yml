@@ -12,9 +12,9 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  FRONTEND_IMAGE_NAME: ${{ github.repository }}/frontend
-  BACKEND_IMAGE_NAME: ${{ github.repository }}/backend
-  LITELLM_IMAGE_NAME: ${{ github.repository }}/litellm
+  FRONTEND_IMAGE_NAME: ${{ github.repository_owner }}/luigi-chat-frontend
+  BACKEND_IMAGE_NAME: ${{ github.repository_owner }}/luigi-chat-backend
+  LITELLM_IMAGE_NAME: ${{ github.repository_owner }}/luigi-chat-litellm
 
 jobs:
   build-frontend:

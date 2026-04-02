@@ -48,7 +48,7 @@ services:
   # LiteLLM Proxy (AI Gateway)
   # ===========================================
   litellm:
-    image: ghcr.io/${GITHUB_REPOSITORY:-luigivis/luigi-chat}/litellm:latest
+    image: ghcr.io/${GITHUB_REPOSITORY:-luigivis}/luigi-chat-litellm:latest
     container_name: luigi-litellm-prod
     restart: unless-stopped
     ports:
@@ -72,7 +72,7 @@ services:
   # Backend FastAPI
   # ===========================================
   backend:
-    image: ghcr.io/${GITHUB_REPOSITORY:-luigivis/luigi-chat}/backend:latest
+    image: ghcr.io/${GITHUB_REPOSITORY:-luigivis}/luigi-chat-backend:latest
     container_name: luigi-backend-prod
     restart: unless-stopped
     ports:
@@ -105,7 +105,7 @@ services:
   # Frontend SvelteKit
   # ===========================================
   frontend:
-    image: ghcr.io/${GITHUB_REPOSITORY:-luigivis/luigi-chat}/frontend:latest
+    image: ghcr.io/${GITHUB_REPOSITORY:-luigivis}/luigi-chat-frontend:latest
     container_name: luigi-frontend-prod
     restart: unless-stopped
     ports:

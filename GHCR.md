@@ -7,9 +7,9 @@ This project uses GitHub Actions to build and push Docker images to GHCR on ever
 ## Docker Images
 
 Images are published to:
-- `ghcr.io/luigivis/luigi-chat/frontend:latest`
-- `ghcr.io/luigivis/luigi-chat/backend:latest`
-- `ghcr.io/luigivis/luigi-chat/litellm:latest`
+- `ghcr.io/luigivis/luigi-chat-frontend:latest`
+- `ghcr.io/luigivis/luigi-chat-backend:latest`
+- `ghcr.io/luigivis/luigi-chat-litellm:latest`
 
 ## GitHub Actions Workflow
 
