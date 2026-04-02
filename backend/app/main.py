@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from app.config import settings
-from app.database import engine, Base
+from app.models import engine, Base
 from app.routers import auth, users, chats, files, audio, models
 
 logging.basicConfig(level=logging.INFO)

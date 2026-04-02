@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { Chat, Plus, Trash2, Settings, LogOut } from 'lucide-svelte';
+	import { MessageCircle, Plus, Settings } from 'lucide-svelte';
 	import type { Chat as ChatType } from '$lib/stores/chat';
 
 	export let chats: ChatType[] = [];
@@ -32,8 +32,8 @@
 				on:click={() => dispatch('selectChat', chat.id)}
 				class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left mb-1 transition {chat.id === currentChatId ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-700 hover:text-white'}"
 			>
-				<Chat size={18} />
-				<span class="flex-1 truncate">{chat.title}</span>
+				<MessageCircle size={18} />
+				<span class="flex-1 truncate capitalize">{chat.title || 'New Chat'}</span>
 				<span class="text-xs opacity-50">{formatDate(chat.updated_at)}</span>
 			</button>
 		{/each}
