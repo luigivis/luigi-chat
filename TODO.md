@@ -95,16 +95,16 @@
 - [x] Lista de usuarios
 - [x] Crear/editar/eliminar usuarios
 - [x] Ver API keys y uso
-- [ ] Estadísticas de spend
+- [x] Estadísticas de spend
 
 ## Fase 13: Testing
 
-- [ ] Tests unitarios: auth
+- [x] Tests unitarios: auth
 - [x] Tests unitarios: API endpoints
-- [ ] Tests de integración: flujo registro → chat
-- [ ] Tests de integración: upload de imagen
-- [ ] Tests de integración: TTS
-- [ ] Docker Compose test (levantando todos los servicios)
+- [x] Tests de integración: flujo registro → chat
+- [x] Tests de integración: upload de imagen
+- [x] Tests de integración: TTS
+- [x] Docker Compose test (levantando todos los servicios)
 
 ## Fase 14: Documentación
 

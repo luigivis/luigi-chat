@@ -10,6 +10,8 @@ export interface User {
 	voice_enabled: boolean;
 	status: string;
 	litellm_key?: string;
+	total_spend?: number;
+	key_spend?: number;
 }
 
 export interface CreateUserRequest {

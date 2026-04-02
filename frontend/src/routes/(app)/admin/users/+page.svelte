@@ -108,6 +108,7 @@
 						<th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Role</th>
 						<th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Status</th>
 						<th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Default Model</th>
+						<th class="px-4 py-3 text-right text-sm font-semibold text-gray-300">Spend</th>
 						<th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">API Key</th>
 						<th class="px-4 py-3 text-right text-sm font-semibold text-gray-300">Actions</th>
 					</tr>
@@ -137,6 +138,9 @@
 								</span>
 							</td>
 							<td class="px-4 py-3 text-sm text-gray-400">{user.default_model || '-'}</td>
+							<td class="px-4 py-3 text-right text-sm">
+								<span class="text-primary-400">${(user.key_spend || 0).toFixed(4)}</span>
+							</td>
 							<td class="px-4 py-3 font-mono text-xs text-gray-400">
 								{user.litellm_key ? `${user.litellm_key.slice(0, 20)}...` : '-'}
 							</td>

@@ -40,6 +40,8 @@ class UserResponse(BaseModel):
     voice_enabled: bool
     status: str
     litellm_key: Optional[str] = None
+    total_spend: Optional[float] = 0.0
+    key_spend: Optional[float] = 0.0
 
 
 class CreateUserRequest(BaseModel):
@@ -80,8 +82,26 @@ async def list_users(
     result = await db.execute(select(User).order_by(User.created_at.desc()))
     users = result.scalars().all()
     
-    return [
-        UserResponse(
+    user_responses = []
+    for u in users:
+        total_spend = 0.0
+        key_spend = 0.0
+        
+        if u.litellm_user_id:
+            try:
+                spend_data = await litellm_service.get_user_spend(u.litellm_user_id)
+                total_spend = spend_data.get("total_spend", 0.0) or 0.0
+            except Exception:
+                pass
+        
+        if u.litellm_key:
+            try:
+                key_data = await litellm_service.get_key_spend(u.litellm_key)
+                key_spend = key_data.get("total_spend", 0.0) or 0.0
+            except Exception:
+                pass
+        
+        user_responses.append(UserResponse(
             id=str(u.id),
             email=u.email,
             role=u.role,
@@ -90,10 +110,12 @@ async def list_users(
             default_model=u.default_model,
             voice_enabled=u.voice_enabled,
             status=u.status,
-            litellm_key=u.litellm_key
-        )
-        for u in users
-    ]
+            litellm_key=u.litellm_key,
+            total_spend=total_spend,
+            key_spend=key_spend
+        ))
+    
+    return user_responses
 
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)

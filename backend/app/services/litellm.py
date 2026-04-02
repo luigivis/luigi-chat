@@ -99,6 +99,36 @@ class LiteLLMService:
             except httpx.HTTPError as e:
                 logger.error(f"Error getting LiteLLM user info: {e}")
                 raise
+
+    async def get_user_spend(self, user_id: str) -> Dict[str, Any]:
+        """Get spend information for a user"""
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(
+                    f"{self.base_url}/spend/user",
+                    headers=self._get_headers(),
+                    params={"user_id": user_id}
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error getting LiteLLM user spend: {e}")
+                raise
+
+    async def get_key_spend(self, key: str) -> Dict[str, Any]:
+        """Get spend information for a key"""
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(
+                    f"{self.base_url}/spend/key",
+                    headers=self._get_headers(),
+                    params={"key": key}
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error getting LiteLLM key spend: {e}")
+                raise
     
     async def chat_completion(
         self,
