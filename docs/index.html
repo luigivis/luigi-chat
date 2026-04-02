@@ -3,218 +3,465 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luigi Chat - AI Chat Interface</title>
+    <title>Luigi Chat</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-card: rgba(0,0,0,0.4);
-            --border: rgba(255,255,255,0.2);
-            --text: #fff;
-            --text-muted: rgba(255,255,255,0.7);
-        }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        html {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
         body {
-            margin: auto;
-            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-            overflow: auto;
-            background: linear-gradient(315deg, rgba(101,0,94,1) 3%, rgba(60,132,206,1) 38%, rgba(48,238,226,1) 68%, rgba(255,25,25,1) 98%);
-            animation: gradient 15s ease infinite;
-            background-size: 400% 400%;
-            background-attachment: fixed;
-            color: var(--text);
-            line-height: 1.5;
-            min-height: 100vh;
+            font-family: 'Space Grotesk', sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow-x: hidden;
         }
 
-        @keyframes gradient {
-            0% { background-position: 0% 0%; }
-            50% { background-position: 100% 100%; }
-            100% { background-position: 0% 0%; }
-        }
+        ::-webkit-scrollbar { width: 0; }
 
-        .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
-
-        /* Waves */
-        .wave {
-            background: rgba(255,255,255,0.25);
-            border-radius: 1000% 1000% 0 0;
+        /* Indicator */
+        .indicator {
             position: fixed;
-            width: 200%;
-            height: 12em;
-            animation: wave 10s -3s linear infinite;
-            transform: translate3d(0, 0, 0);
-            opacity: 0.8;
-            bottom: 0;
-            left: 0;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .indicator a {
+            display: block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.4);
+            transition: all 0.3s ease;
+            font-size: 0;
+        }
+
+        .indicator a.active {
+            background: #fff;
+            border-color: #fff;
+        }
+
+        /* Wave background */
+        .wave-bg {
+            position: fixed;
+            inset: 0;
             z-index: 0;
-        }
-        .wave:nth-of-type(2) {
-            bottom: -1.25em;
-            animation: wave 18s linear reverse infinite;
-            opacity: 0.8;
-        }
-        .wave:nth-of-type(3) {
-            bottom: -2.5em;
-            animation: wave 20s -1s reverse infinite;
-            opacity: 0.9;
-        }
-        @keyframes wave {
-            2% { transform: translateX(1); }
-            25% { transform: translateX(-25%); }
-            50% { transform: translateX(-50%); }
-            75% { transform: translateX(-25%); }
-            100% { transform: translateX(1); }
+            overflow: hidden;
+            pointer-events: none;
         }
 
-        /* Hero */
-        .hero {
-            min-height: 80vh;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            text-align: center; padding: 60px 20px; position: relative; z-index: 1;
+        .wave {
+            position: absolute;
+            inset: -50%;
+            background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(255,255,255,0.04) 0%, transparent 70%);
+            animation: wavePulse 15s ease-in-out infinite;
         }
 
-        .badge {
-            display: inline-block; padding: 8px 16px;
-            border: 2px solid var(--text); font-size: 11px; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 2px; margin-bottom: 24px;
-            background: var(--bg-card);
+        .wave-2 {
+            animation-delay: -5s;
+            opacity: 0.6;
         }
 
+        .wave-3 {
+            animation-delay: -10s;
+            opacity: 0.3;
+        }
+
+        @keyframes wavePulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(5deg); }
+        }
+
+        /* Sections */
+        .section {
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 24px;
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .section.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .content {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Typography */
         h1 {
-            font-size: clamp(3rem, 10vw, 5rem); font-weight: 700;
-            line-height: 1.1; margin-bottom: 20px; letter-spacing: -2px;
-            text-shadow: 0 4px 30px rgba(0,0,0,0.3);
+            font-size: clamp(3rem, 10vw, 5rem);
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 20px;
+            letter-spacing: -2px;
         }
 
-        .hero-subtitle {
-            font-size: 1.2rem; color: var(--text-muted); max-width: 500px; margin-bottom: 36px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        .subtitle {
+            font-size: 1.15rem;
+            color: rgba(255,255,255,0.6);
+            max-width: 450px;
+            margin: 0 auto 32px;
         }
 
         .btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            padding: 14px 32px; font-family: inherit; font-size: 14px; font-weight: 600;
-            text-decoration: none; border: 2px solid var(--text); background: var(--bg-card);
-            color: var(--text); cursor: pointer; transition: all 0.2s;
-            backdrop-filter: blur(10px);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 28px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            border: 2px solid #fff;
+            color: #fff;
+            background: transparent;
+            transition: all 0.3s ease;
         }
-        .btn:hover { background: var(--text); color: #000; transform: translateY(-2px); }
-        .btn-solid { background: var(--text); color: #000; }
-        .btn-solid:hover { background: transparent; color: var(--text); }
+
+        .btn:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .btn-primary {
+            background: #fff;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: transparent;
+            color: #fff;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Section label */
+        .section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 24px;
+        }
 
         /* Install */
-        .install { padding: 40px 0; position: relative; z-index: 1; }
-        .install-box { background: var(--bg-card); border: 2px solid var(--border); padding: 24px; backdrop-filter: blur(10px); }
-        .install h2 { font-size: 0.9rem; margin-bottom: 16px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; }
-        .command-line {
-            background: rgba(0,0,0,0.5); border: 1px solid var(--border);
-            padding: 16px 20px; font-family: 'JetBrains Mono', monospace;
-            font-size: 13px; display: flex; justify-content: space-between; align-items: center; gap: 16px;
+        .install-box {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 20px 24px;
         }
+
+        .command-line {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 14px 18px;
+            font-family: monospace;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+        }
+
         .copy-btn {
-            background: var(--border); border: none; color: var(--text);
-            padding: 8px 16px; font-size: 11px; cursor: pointer; transition: all 0.2s;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff;
+            padding: 5px 14px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
             white-space: nowrap;
         }
-        .copy-btn:hover { background: var(--text); color: #000; }
+
+        .copy-btn:hover {
+            background: #fff;
+            color: #000;
+        }
 
         /* Features */
-        .features { padding: 60px 0; position: relative; z-index: 1; }
-        .section-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 4px; color: var(--text-muted); margin-bottom: 32px; }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            text-align: left;
+        }
+
         .feature-card {
-            background: var(--bg-card); border: 2px solid var(--border);
-            padding: 20px; backdrop-filter: blur(10px); transition: all 0.2s;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 18px;
+            transition: transform 0.3s ease;
         }
-        .feature-card:hover { transform: translateY(-4px); border-color: var(--text); }
+
+        .feature-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255,255,255,0.25);
+        }
+
         .feature-icon {
-            width: 36px; height: 36px; margin-bottom: 12px;
+            width: 26px;
+            height: 26px;
+            margin-bottom: 10px;
         }
-        .feature-icon svg { width: 100%; height: 100%; fill: var(--text); }
-        .feature-card h3 { font-size: 0.95rem; margin-bottom: 8px; }
-        .feature-card p { font-size: 12px; color: var(--text-muted); }
+
+        .feature-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: #fff;
+        }
+
+        .feature-card h3 {
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .feature-card p {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+        }
 
         /* Models */
-        .models { padding: 60px 0; position: relative; z-index: 1; }
-        .models-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            text-align: center;
+        }
+
         .model-card {
-            background: var(--bg-card); border: 2px solid var(--border);
-            padding: 16px; backdrop-filter: blur(10px); transition: all 0.2s;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 16px;
         }
-        .model-card:hover { transform: scale(1.03); border-color: var(--text); }
+
+        .model-card h3 {
+            font-size: 0.9rem;
+            margin: 8px 0 4px;
+        }
+
+        .model-card p {
+            font-size: 10px;
+            color: rgba(255,255,255,0.5);
+        }
+
         .model-badge {
-            display: inline-block; background: var(--text); color: #000;
-            padding: 2px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase;
+            display: inline-block;
+            background: #fff;
+            color: #000;
+            padding: 2px 8px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
         }
-        .model-card h3 { font-size: 0.9rem; margin: 12px 0 6px; }
-        .model-card p { font-size: 11px; color: var(--text-muted); }
-        .model-tag { display: inline-block; margin-top: 10px; padding: 3px 8px; background: rgba(255,255,255,0.1); font-family: 'JetBrains Mono', monospace; font-size: 9px; }
+
+        /* Gallery / Screenshots */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .gallery-item {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 16px;
+        }
+
+        .gallery-item svg {
+            width: 28px;
+            height: 28px;
+            fill: rgba(255,255,255,0.3);
+        }
+
+        .gallery-item span {
+            font-size: 10px;
+            color: rgba(255,255,255,0.4);
+        }
 
         /* Preview */
-        .preview { padding: 60px 0; position: relative; z-index: 1; }
-        .preview-window { background: var(--bg-card); border: 2px solid var(--border); max-width: 650px; margin: 0 auto; backdrop-filter: blur(10px); }
-        .preview-header { background: rgba(0,0,0,0.3); padding: 10px 14px; display: flex; gap: 6px; border-bottom: 1px solid var(--border); }
-        .preview-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
-        .preview-content { padding: 20px; }
-        .chat-messages { display: flex; flex-direction: column; gap: 10px; }
-        .chat-message { max-width: 85%; padding: 10px 14px; font-size: 13px; }
-        .chat-message.user { align-self: flex-end; background: var(--text); color: #000; border-radius: 12px 12px 4px 12px; }
-        .chat-message.assistant { align-self: flex-start; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 12px 12px 12px 4px; }
-        .chat-input { margin-top: 16px; display: flex; gap: 8px; }
-        .chat-input input {
-            flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
-            padding: 10px 14px; color: var(--text); font-family: inherit; font-size: 13px; outline: none; border-radius: 8px;
+        .preview-box {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.12);
+            max-width: 550px;
+            margin: 0 auto;
         }
-        .chat-input input:focus { border-color: var(--text); }
-        .chat-input button { background: var(--text); border: none; color: #000; padding: 10px 20px; font-weight: 600; border-radius: 8px; cursor: pointer; }
 
-        /* Screenshots */
-        .screenshots { padding: 60px 0; position: relative; z-index: 1; }
-        .screenshots-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-        .image-placeholder {
-            background: var(--bg-card); border: 2px dashed var(--border);
-            min-height: 160px; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 12px;
-            color: var(--text-muted); font-size: 11px; backdrop-filter: blur(10px);
+        .preview-header {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 14px;
+            display: flex;
+            gap: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
-        .image-placeholder svg { width: 28px; height: 28px; fill: var(--border); }
+
+        .preview-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .preview-content {
+            padding: 20px;
+        }
+
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-msg {
+            max-width: 80%;
+            padding: 10px 14px;
+            font-size: 13px;
+        }
+
+        .chat-msg.user {
+            align-self: flex-end;
+            background: #fff;
+            color: #000;
+            border-radius: 12px 12px 4px 12px;
+        }
+
+        .chat-msg.assistant {
+            align-self: flex-start;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px 12px 12px 4px;
+        }
+
+        .chat-input {
+            margin-top: 14px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 14px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 12px;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .chat-input input:focus {
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .chat-input button {
+            background: #fff;
+            border: none;
+            color: #000;
+            padding: 10px 18px;
+            font-weight: 600;
+            font-size: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
 
         /* CTA */
-        .cta { padding: 60px 0 120px; position: relative; z-index: 1; }
-        .cta-box { background: var(--bg-card); border: 2px solid var(--text); padding: 32px; text-align: center; backdrop-filter: blur(10px); }
-        .cta-box h2 { font-size: 1.5rem; margin-bottom: 12px; }
-        .cta-box p { color: var(--text-muted); margin-bottom: 24px; font-size: 14px; }
+        .cta-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .cta-content p {
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 24px;
+        }
+
+        /* Footer */
+        footer {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            font-size: 9px;
+            color: rgba(255,255,255,0.3);
+            z-index: 100;
+        }
 
         @media (max-width: 600px) {
-            .hero { padding: 40px 16px; min-height: 70vh; }
-            .features-grid, .models-grid, .screenshots-grid { grid-template-columns: 1fr; }
-            .command-line { flex-direction: column; gap: 12px; text-align: center; }
+            .indicator { right: 10px; }
+            .indicator a { width: 6px; height: 6px; }
+            .features-grid, .gallery-grid { grid-template-columns: 1fr; }
+            .models-grid { grid-template-columns: 1fr; }
+            h1 { letter-spacing: -1px; }
+            .subtitle { font-size: 1rem; }
+            .btn { padding: 12px 20px; font-size: 13px; }
+            .command-line { flex-direction: column; gap: 8px; text-align: center; }
+            footer { display: none; }
         }
     </style>
 </head>
 <body>
-    <div class="wave"></div>
-    <div class="wave"></div>
-    <div class="wave"></div>
+    <nav class="indicator">
+        <a href="#" data-section="0" class="active">1</a>
+        <a href="#" data-section="1">2</a>
+        <a href="#" data-section="2">3</a>
+        <a href="#" data-section="3">4</a>
+        <a href="#" data-section="4">5</a>
+        <a href="#" data-section="5">6</a>
+        <a href="#" data-section="6">7</a>
+    </nav>
 
-    <section class="hero">
-        <div class="badge">Powered by MiniMax AI</div>
-        <h1>LUIGI CHAT</h1>
-        <p class="hero-subtitle">AI chat interface with advanced reasoning, vision, and speech synthesis.</p>
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
-            <a href="#preview" class="btn btn-solid">See Demo</a>
-            <a href="#features" class="btn">Features</a>
+    <div class="wave-bg">
+        <div class="wave wave-1"></div>
+        <div class="wave wave-2"></div>
+        <div class="wave wave-3"></div>
+    </div>
+
+    <section id="hero" class="section active">
+        <div class="content">
+            <h1>LUIGI CHAT</h1>
+            <p class="subtitle">Chat with AI at chat.luigivis.com — fast, secure, and customizable.</p>
+            <div class="btn-group">
+                <a href="https://chat.luigivis.com" class="btn btn-primary" target="_blank">Open App</a>
+                <a href="#features" class="btn">Features</a>
+            </div>
         </div>
     </section>
 
-    <section class="install">
-        <div class="container">
+    <section id="install" class="section">
+        <div class="content">
+            <p class="section-label">Quick Install</p>
             <div class="install-box">
-                <h2>Quick Install</h2>
                 <div class="command-line">
                     <span>curl -fsSL https://docs.chat.luigivis.com/install.sh | bash</span>
                     <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.querySelector('span').textContent)">Copy</button>
@@ -223,64 +470,61 @@
         </div>
     </section>
 
-    <section id="features" class="features">
-        <div class="container">
-            <h2 class="section-title">Features</h2>
+    <section id="features" class="section">
+        <div class="content">
+            <p class="section-label">Features</p>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
-                    <h3>Advanced Reasoning</h3>
-                    <p>MiniMax-M2.7 for complex reasoning tasks with faster responses.</p>
+                    <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg></div>
+                    <h3>Real-time Chat</h3>
+                    <p>Stream responses instantly with a modern interface.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
-                    <h3>Vision Analysis</h3>
-                    <p>Upload images and get intelligent analysis with MiniMax-Text-01.</p>
+                    <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+                    <h3>Image Support</h3>
+                    <p>Upload images directly in conversations.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg></div>
-                    <h3>Speech Synthesis</h3>
-                    <p>Natural text-to-speech with MiniMax Speech 2.6 HD.</p>
+                    <h3>Voice Output</h3>
+                    <p>Listen to responses with text-to-speech.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></div>
-                    <h3>Secure API Keys</h3>
-                    <p>Auto-generated LiteLLM keys with configurable rate limits.</p>
+                    <h3>Secure & Fast</h3>
+                    <p>Built with security and speed in mind.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="models">
-        <div class="container">
-            <h2 class="section-title">Models</h2>
+    <section id="models" class="section">
+        <div class="content">
+            <p class="section-label">Models</p>
             <div class="models-grid">
                 <div class="model-card">
                     <span class="model-badge">Chat</span>
                     <h3>Luigi Thinking</h3>
-                    <p>Advanced reasoning and conversation.</p>
-                    <span class="model-tag">minimax/MiniMax-M2.7</span>
+                    <p>Advanced reasoning model</p>
                 </div>
                 <div class="model-card">
                     <span class="model-badge">Vision</span>
                     <h3>Luigi Vision</h3>
-                    <p>Image analysis and understanding.</p>
-                    <span class="model-tag">minimax/MiniMax-Text-01</span>
+                    <p>Image analysis model</p>
                 </div>
                 <div class="model-card">
                     <span class="model-badge">Voice</span>
                     <h3>Luigi Voice</h3>
-                    <p>Natural text-to-speech.</p>
-                    <span class="model-tag">minimax/speech-2.6-hd</span>
+                    <p>Text-to-speech model</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="preview" class="preview">
-        <div class="container">
-            <h2 class="section-title">Preview</h2>
-            <div class="preview-window">
+    <section id="preview" class="section">
+        <div class="content">
+            <p class="section-label">Preview</p>
+            <div class="preview-box">
                 <div class="preview-header">
                     <div class="preview-dot"></div>
                     <div class="preview-dot"></div>
@@ -288,8 +532,8 @@
                 </div>
                 <div class="preview-content">
                     <div class="chat-messages">
-                        <div class="chat-message user">Explain quantum computing in simple terms</div>
-                        <div class="chat-message assistant">Imagine a coin that can be both heads AND tails until you look at it. That's superposition! Qubits can be 0, 1, or both simultaneously.</div>
+                        <div class="chat-msg user">Explain quantum computing</div>
+                        <div class="chat-msg assistant">A coin that can be both heads AND tails until you look at it. That's superposition!</div>
                     </div>
                     <div class="chat-input">
                         <input type="text" placeholder="Ask anything...">
@@ -300,41 +544,114 @@
         </div>
     </section>
 
-    <section class="screenshots">
-        <div class="container">
-            <h2 class="section-title">Screenshots</h2>
-            <div class="screenshots-grid">
-                <div class="image-placeholder">
+    <section id="gallery" class="section">
+        <div class="content">
+            <p class="section-label">Screenshots</p>
+            <div class="gallery-grid">
+                <div class="gallery-item">
                     <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
-                    <span>[Chat Interface]</span>
+                    <span>Chat Interface</span>
                 </div>
-                <div class="image-placeholder">
+                <div class="gallery-item">
                     <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                    <span>[Admin Panel]</span>
+                    <span>Admin Panel</span>
                 </div>
-                <div class="image-placeholder">
+                <div class="gallery-item">
                     <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-                    <span>[Settings]</span>
+                    <span>Settings</span>
                 </div>
-                <div class="image-placeholder">
+                <div class="gallery-item">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
-                    <span>[Voice TTS]</span>
+                    <span>Voice TTS</span>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="cta">
-        <div class="container">
-            <div class="cta-box">
-                <h2>Ready to Start?</h2>
-                <p>Deploy Luigi Chat on your own infrastructure with Docker.</p>
-                <a href="https://github.com/luigivis/luigi-chat" class="btn btn-solid" target="_blank">View on GitHub</a>
+    <section id="cta" class="section">
+        <div class="content cta-content">
+            <h2>Ready to Chat?</h2>
+            <p>Deploy Luigi Chat on your own infrastructure with Docker.</p>
+            <div class="btn-group">
+                <a href="https://chat.luigivis.com" class="btn btn-primary" target="_blank">Open App</a>
+                <a href="https://github.com/luigivis/luigi-chat" class="btn" target="_blank">GitHub</a>
             </div>
         </div>
     </section>
+
+    <footer>Luigi Chat</footer>
 
     <script>
+        const sections = document.querySelectorAll('.section');
+        const links = document.querySelectorAll('.indicator a');
+        let currentSection = 0;
+
+        function showSection(index) {
+            if (index === currentSection || index < 0 || index >= sections.length) return;
+            
+            sections[currentSection].classList.remove('active');
+            links[currentSection].classList.remove('active');
+            
+            currentSection = index;
+            
+            sections[currentSection].classList.add('active');
+            links[currentSection].classList.add('active');
+        }
+
+        links.forEach((link, index) => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection(index);
+            });
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+                e.preventDefault();
+                showSection(currentSection + 1);
+            } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                e.preventDefault();
+                showSection(currentSection - 1);
+            }
+        });
+
+        // Mouse wheel scroll
+        let wheelTimeout;
+        document.addEventListener('wheel', (e) => {
+            if (wheelTimeout) return;
+            
+            wheelTimeout = setTimeout(() => {
+                wheelTimeout = null;
+            }, 800);
+            
+            if (e.deltaY > 0) {
+                showSection(currentSection + 1);
+            } else {
+                showSection(currentSection - 1);
+            }
+        }, { passive: true });
+
+        // Touch support for mobile
+        let touchStartY = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            const touchEndY = e.changedTouches[0].clientY;
+            const diff = touchStartY - touchEndY;
+            
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) {
+                    showSection(currentSection + 1);
+                } else {
+                    showSection(currentSection - 1);
+                }
+            }
+        });
+
+        // Chat demo
         const input = document.querySelector('.chat-input input');
         const sendBtn = document.querySelector('.chat-input button');
         const messages = document.querySelector('.chat-messages');
@@ -342,18 +659,11 @@
         sendBtn?.addEventListener('click', () => {
             const text = input.value.trim();
             if (!text) return;
-            messages.innerHTML += `<div class="chat-message user">${text}</div>`;
+            messages.innerHTML += `<div class="chat-msg user">${text}</div>`;
             input.value = '';
             setTimeout(() => {
-                messages.innerHTML += `<div class="chat-message assistant">That's an interesting question. Let me think about this...</div>`;
+                messages.innerHTML += `<div class="chat-msg assistant">That's interesting. Let me think...</div>`;
             }, 800);
-        });
-
-        document.querySelectorAll('a[href^="#"]').forEach(a => {
-            a.addEventListener('click', e => {
-                e.preventDefault();
-                document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
-            });
         });
     </script>
 </body>
