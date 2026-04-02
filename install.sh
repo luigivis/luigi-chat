@@ -18,9 +18,9 @@ DEFAULT_SYSTEM_NAME="Luigi Chat"
 DEFAULT_POSTGRES_USER="luigi"
 DEFAULT_POSTGRES_DB="luigi_chat"
 DEFAULT_DOCKER_NETWORK="luigi-network"
-DEFAULT_IMAGE_BACKEND="ghcr.io/luigivis/luigi-chat/backend:latest"
-DEFAULT_IMAGE_FRONTEND="ghcr.io/luigivis/luigi-chat/frontend:latest"
-DEFAULT_IMAGE_LITELLM="ghcr.io/luigivis/luigi-chat/litellm:latest"
+DEFAULT_IMAGE_BACKEND="ghcr.io/luigivis/luigi-chat-backend:latest"
+DEFAULT_IMAGE_FRONTEND="ghcr.io/luigivis/luigi-chat-frontend:latest"
+DEFAULT_IMAGE_LITELLM="ghcr.io/luigivis/luigi-chat-litellm:latest"
 
 # Questions
 read -p "System name [$DEFAULT_SYSTEM_NAME]: " SYSTEM_NAME
