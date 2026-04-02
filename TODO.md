@@ -116,8 +116,8 @@
 ## Fase 15: Deployment
 
 - [x] Push a GitHub
-- [ ] Setup CI/CD (GitHub Actions)
-- [ ] Docker image builds
+- [x] Setup CI/CD (GitHub Actions)
+- [x] Docker image builds
 - [ ] Deployment a producción
 
 ---
