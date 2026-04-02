@@ -1103,9 +1103,116 @@ async def text_to_speech(
 
 ---
 
-## 15. Tests
+## 15. Referencias Externas
 
-### 15.1 Unit Tests
+### 15.1 MiniMax Platform
+
+**Documentación Oficial:** https://platform.minimax.io/docs
+
+**Modelos MiniMax:**
+| Modelo | Endpoint | Descripción |
+|--------|----------|-------------|
+| M2.7 | `/v1/text/chatcompletion_v2` | Chat principal con razonamiento |
+| Text-01 | `/v1/text/chatcompletion_v2` | Vision + texto |
+| Speech 2.6 | `/v1/t2a_v2` | Text-to-Speech |
+| Image-01 | `/v1/image_gen` | Generación de imágenes |
+
+**Base URL:** `https://api.minimax.io`
+
+**Auth:** Bearer token en header `Authorization: Bearer $MINIMAX_API_KEY`
+
+**Rate Limits:**
+| Plan | RPM | TPM |
+|------|-----|-----|
+| Pay-as-you-go | varies | varies |
+| Token Plan | 1000 | 10000 |
+
+**File API:**
+- Total capacity: 100GB
+- Max file size: 512MB
+- Supported: pdf, docx, txt, jsonl, mp3, m4a, wav
+
+**TTS WebSocket:** `wss://api.minimax.io/ws/v1/t2a_v2`
+
+---
+
+### 15.2 OpenWebUI (Inspiración/Fork Base)
+
+**GitHub:** https://github.com/open-webui/open-webui
+
+**Stack:**
+- Backend: FastAPI + Python
+- Frontend: SvelteKit + TailwindCSS
+- Database: SQLAlchemy (SQLite/PostgreSQL)
+- Auth: JWT + OAuth
+- Real-time: Socket.IO
+
+**Arquitectura Clave:**
+```
+backend/
+├── main.py           # FastAPI app
+├── routers/          # API endpoints
+├── models/           # DB models
+├── services/         # Business logic
+└── utils/            # Helpers
+```
+
+**Features que adoptamos:**
+- Chat interface con streaming
+- Historial de chats
+- Model selector
+- File upload
+- Auth system
+
+**Licencia:** Custom (requiere mantener branding de OpenWebUI si se modifica)
+
+---
+
+### 15.3 LiteLLM Proxy
+
+**Documentación:** https://docs.litellm.ai/docs
+
+**GitHub:** https://github.com/BerriAI/litellm
+
+**Virtual Keys:**
+```bash
+# Generar key
+POST /key/generate
+{
+  "user_id": "user@email.com",
+  "models": ["luigi-thinking"],
+  "rpm_limit": 3,
+  "tpm_limit": 6000,
+  "aliases": {
+    "luigi-thinking": "minimax/MiniMax-M2.7"
+  }
+}
+```
+
+**Rate Limiting:**
+- Per-key RPM/TPM limits
+- Automatic tracking en DB
+- Headers: `x-ratelimit-limit-requests`
+
+**Model Aliases:**
+```yaml
+model_list:
+  - model_name: luigi-thinking
+    litellm_params:
+      model: minimax/MiniMax-M2.7
+      api_base: https://api.minimax.io/v1
+```
+
+**Database Schema (PostgreSQL):**
+- `LiteLLM_VerificationToken` - API keys
+- `LiteLLM_UserTable` - Users with budgets
+- `LiteLLM_SpendLogs` - Cost tracking
+
+---
+
+## 16. Tests
+
+### 16.1 Unit Tests
 
 **Backend:**
 ```python
@@ -1131,7 +1238,7 @@ test('login flow', async () => {
 });
 ```
 
-### 15.2 Integration Tests
+### 16.2 Integration Tests
 
 ```python
 # tests/test_integration.py
@@ -1154,7 +1261,7 @@ def test_signup_to_chat_flow():
     assert message_response.status_code == 200
 ```
 
-### 15.3 E2E Tests (Playwright)
+### 16.3 E2E Tests (Playwright)
 
 ```typescript
 // tests/e2e/chat.spec.ts

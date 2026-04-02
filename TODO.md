@@ -7,50 +7,50 @@
 - [x] Crear SPEC.md con todas las especificaciones
 - [x] Crear TODO.md con checklist
 - [x] Crear skill 'luigi-dev-workflow'
-- [ ] Crear `.env.example` con todas las variables
-- [ ] Crear `docker-compose.yaml` (desarrollo)
-- [ ] Crear `docker-compose.prod.yaml` (producción)
+- [x] Crear `.env.example` con todas las variables
+- [x] Crear `docker-compose.yaml` (desarrollo)
+- [x] Crear `docker-compose.prod.yaml` (producción)
 - [ ] Crear `Makefile` con comandos útiles
 
 ## Fase 2: Backend - Core
 
-- [ ] `backend/requirements.txt` - dependencias Python
-- [ ] `backend/app/main.py` - FastAPI entry point
-- [ ] `backend/app/config.py` - Configuración de app
-- [ ] `backend/app/models/database.py` - SQLAlchemy models
-- [ ] `backend/app/utils/auth.py` - JWT utilities
-- [ ] `backend/app/utils/rate_limit.py` - Rate limiting utils
+- [x] `backend/requirements.txt` - dependencias Python
+- [x] `backend/app/main.py` - FastAPI entry point
+- [x] `backend/app/config.py` - Configuración de app
+- [x] `backend/app/models/database.py` - SQLAlchemy models
+- [x] `backend/app/utils/auth.py` - JWT utilities
+- [x] `backend/app/utils/rate_limit.py` - Rate limiting utils
 
 ## Fase 3: Backend - Auth System
 
-- [ ] `backend/app/routers/auth.py` - signup, login, logout
-- [ ] Auto-generación de LiteLLM API key al registrar
-- [ ] JWT token management
-- [ ] Password hashing con bcrypt
-- [ ] Session management
+- [x] `backend/app/routers/auth.py` - signup, login, logout
+- [x] Auto-generación de LiteLLM API key al registrar
+- [x] JWT token management
+- [x] Password hashing con bcrypt
+- [x] Session management
 
 ## Fase 4: Backend - API Routers
 
-- [ ] `backend/app/routers/users.py` - CRUD usuarios (admin)
-- [ ] `backend/app/routers/chats.py` - Historial de chats
-- [ ] `backend/app/routers/files.py` - MiniMax File API proxy
-- [ ] `backend/app/routers/audio.py` - TTS endpoint
-- [ ] `backend/app/routers/models.py` - Lista de modelos disponibles
+- [x] `backend/app/routers/users.py` - CRUD usuarios (admin)
+- [x] `backend/app/routers/chats.py` - Historial de chats
+- [x] `backend/app/routers/files.py` - MiniMax File API proxy
+- [x] `backend/app/routers/audio.py` - TTS endpoint
+- [x] `backend/app/routers/models.py` - Lista de modelos disponibles
 
 ## Fase 5: Backend - Services
 
-- [ ] `backend/app/services/litellm.py` - Wrapper LiteLLM client
-- [ ] `backend/app/services/minimax.py` - MiniMax API client
+- [x] `backend/app/services/litellm.py` - Wrapper LiteLLM client
+- [x] `backend/app/services/minimax.py` - MiniMax API client
 - [ ] `backend/app/services/file_service.py` - File upload/download
 - [ ] `backend/app/services/audio_service.py` - TTS service
 
 ## Fase 6: LiteLLM Configuration
 
-- [ ] `litellm/config.yaml` - Model aliases
-- [ ] `litellm/model_aliases` - luigi-thinking, luigi-vision, luigi-voice
-- [ ] Rate limiting config (3 RPM por defecto)
-- [ ] Database connection (PostgreSQL)
-- [ ] Redis connection para cache/sessions
+- [x] `litellm/config.yaml` - Model aliases
+- [x] `litellm/model_aliases` - luigi-thinking, luigi-vision, luigi-voice
+- [x] Rate limiting config (3 RPM por defecto)
+- [x] Database connection (PostgreSQL)
+- [x] Redis connection para cache/sessions
 
 ## Fase 7: Frontend - Base (OpenWebUI Fork)
 
