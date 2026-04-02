@@ -36,7 +36,7 @@ function createAuthStore() {
 		async login(email: string, password: string) {
 			update((state) => ({ ...state, loading: true }));
 			try {
-				const response = await fetch(`${import.meta.env.PUBLIC_API_URL}/auth/login`, {
+				const response = await fetch(`${import.meta.env.PUBLIC_API_URL}/api/auth/login`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ email, password })
@@ -53,7 +53,7 @@ function createAuthStore() {
 					localStorage.setItem('refreshToken', data.refresh_token);
 				}
 
-				const userResponse = await fetch(`${import.meta.env.PUBLIC_API_URL}/auth/me`, {
+				const userResponse = await fetch(`${import.meta.env.PUBLIC_API_URL}/api/auth/me`, {
 					headers: { Authorization: `Bearer ${data.access_token}` }
 				});
 
@@ -75,7 +75,7 @@ function createAuthStore() {
 		async signup(email: string, password: string) {
 			update((state) => ({ ...state, loading: true }));
 			try {
-				const response = await fetch(`${import.meta.env.PUBLIC_API_URL}/auth/signup`, {
+				const response = await fetch(`${import.meta.env.PUBLIC_API_URL}/api/auth/signup`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ email, password })
@@ -131,7 +131,7 @@ export async function loadUser() {
 	}
 
 	try {
-		const response = await fetch(`${import.meta.env.PUBLIC_API_URL}/auth/me`, {
+		const response = await fetch(`${import.meta.env.PUBLIC_API_URL}/api/auth/me`, {
 			headers: { Authorization: `Bearer ${token}` }
 		});
 

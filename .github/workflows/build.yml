@@ -1,5 +1,7 @@
 name: Build and Push to GHCR
 
+# Builds and pushes Docker images to GHCR on every push to main
+
 on:
   push:
     branches: [main]

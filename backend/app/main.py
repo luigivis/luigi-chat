@@ -46,12 +46,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(users.router, prefix="/users", tags=["users"])
-app.include_router(chats.router, prefix="/chats", tags=["chats"])
-app.include_router(files.router, prefix="/files", tags=["files"])
-app.include_router(audio.router, prefix="/audio", tags=["audio"])
-app.include_router(models.router, prefix="/models", tags=["models"])
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(users.router, prefix="/api/users", tags=["users"])
+app.include_router(chats.router, prefix="/api/chats", tags=["chats"])
+app.include_router(files.router, prefix="/api/files", tags=["files"])
+app.include_router(audio.router, prefix="/api/audio", tags=["audio"])
+app.include_router(models.router, prefix="/api/models", tags=["models"])
 
 
 @app.get("/")
