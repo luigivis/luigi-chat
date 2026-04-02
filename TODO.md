@@ -10,7 +10,7 @@
 - [x] Crear `.env.example` con todas las variables
 - [x] Crear `docker-compose.yaml` (desarrollo)
 - [x] Crear `docker-compose.prod.yaml` (producción)
-- [ ] Crear `Makefile` con comandos útiles
+- [x] Crear `Makefile` con comandos útiles
 
 ## Fase 2: Backend - Core
 
@@ -54,53 +54,53 @@
 
 ## Fase 7: Frontend - Base (OpenWebUI Fork)
 
-- [ ] Clonar/fork de OpenWebUI base
-- [ ] Branding: cambiar "Open WebUI" → "Luigi Chat"
-- [ ] Configurar tema base
-- [ ] SvelteKit setup
+- [x] Clonar/fork de OpenWebUI base
+- [x] Branding: cambiar "Open WebUI" → "Luigi Chat"
+- [x] Configurar tema base
+- [x] SvelteKit setup
 
 ## Fase 8: Frontend - Auth Pages
 
-- [ ] `frontend/src/routes/auth/login/+page.svelte`
-- [ ] `frontend/src/routes/auth/signup/+page.svelte`
-- [ ] Integración con backend auth API
-- [ ] JWT token storage
+- [x] `frontend/src/routes/auth/login/+page.svelte`
+- [x] `frontend/src/routes/auth/signup/+page.svelte`
+- [x] Integración con backend auth API
+- [x] JWT token storage
 
 ## Fase 9: Frontend - Chat Interface
 
-- [ ] `frontend/src/routes/(app)/+page.svelte` - Chat principal
-- [ ] `frontend/src/lib/components/chat/ChatInterface.svelte`
-- [ ] `frontend/src/lib/components/chat/ChatInput.svelte`
-- [ ] `frontend/src/lib/components/chat/Messages.svelte`
-- [ ] Streaming de respuestas
-- [ ] Upload de imágenes (luigi-vision)
+- [x] `frontend/src/routes/(app)/+page.svelte` - Chat principal
+- [x] `frontend/src/lib/components/chat/ChatInterface.svelte`
+- [x] `frontend/src/lib/components/chat/ChatInput.svelte`
+- [x] `frontend/src/lib/components/chat/Messages.svelte`
+- [x] Streaming de respuestas
+- [x] Upload de imágenes (luigi-vision)
 
 ## Fase 10: Frontend - Voice (TTS)
 
-- [ ] Voice recorder component
-- [ ] Audio player component
-- [ ] Integración con `luigi-voice` endpoint
-- [ ] WebSocket para TTS streaming (MiniMax Speech 2.6)
+- [x] Voice recorder component
+- [x] Audio player component
+- [x] Integración con `luigi-voice` endpoint
+- [x] WebSocket para TTS streaming (MiniMax Speech 2.6)
 
 ## Fase 11: Frontend - Personalización
 
-- [ ] Theme selector (light/dark/auto)
-- [ ] Color picker para tema
-- [ ] Guardar preferencias en backend
-- [ ] Selector de modelo por defecto
+- [x] Theme selector (light/dark/auto)
+- [x] Color picker para tema
+- [x] Guardar preferencias en backend
+- [x] Selector de modelo por defecto
 
 ## Fase 12: Frontend - Admin Panel
 
-- [ ] `frontend/src/routes/admin/+page.svelte`
-- [ ] Lista de usuarios
-- [ ] Crear/editar/eliminar usuarios
-- [ ] Ver API keys y uso
+- [x] `frontend/src/routes/admin/+page.svelte`
+- [x] Lista de usuarios
+- [x] Crear/editar/eliminar usuarios
+- [x] Ver API keys y uso
 - [ ] Estadísticas de spend
 
 ## Fase 13: Testing
 
 - [ ] Tests unitarios: auth
-- [ ] Tests unitarios: API endpoints
+- [x] Tests unitarios: API endpoints
 - [ ] Tests de integración: flujo registro → chat
 - [ ] Tests de integración: upload de imagen
 - [ ] Tests de integración: TTS
@@ -115,7 +115,7 @@
 
 ## Fase 15: Deployment
 
-- [ ] Push a GitHub
+- [x] Push a GitHub
 - [ ] Setup CI/CD (GitHub Actions)
 - [ ] Docker image builds
 - [ ] Deployment a producción
