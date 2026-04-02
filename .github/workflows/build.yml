@@ -131,36 +131,3 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-  deploy:
-    needs: [build-frontend, build-backend, build-litellm]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download docker-compose files
-        run: |
-          curl -sL https://raw.githubusercontent.com/luigivis/luigi-chat/main/docker-compose.yaml -o docker-compose.yaml
-          curl -sL https://raw.githubusercontent.com/luigivis/luigi-chat/main/docker-compose.prod.yaml -o docker-compose.prod.yaml
-
-      - name: Replace image names in docker-compose
-        run: |
-          sed -i 's|image: ghcr.io/luigivis/luigi-chat/frontend:.*|image: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:latest|g' docker-compose.prod.yaml
-          sed -i 's|image: ghcr.io/luigivis/luigi-chat/backend:.*|image: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:latest|g' docker-compose.prod.yaml
-          sed -i 's|image: ghcr.io/luigivis/luigi-chat/litellm:.*|image: ${{ env.REGISTRY }}/${{ env.LITELLM_IMAGE_NAME }}:latest|g' docker-compose.prod.yaml
-
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            cd ${{ secrets.DEPLOY_PATH }}
-            curl -sL https://raw.githubusercontent.com/luigivis/luigi-chat/main/install.sh -o install.sh
-            chmod +x install.sh
-            echo "${{ secrets.DEPLOY_ENV }}" > .env
-            docker-compose -f docker-compose.prod.yaml pull
-            docker-compose -f docker-compose.prod.yaml up -d
