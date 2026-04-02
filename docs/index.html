@@ -13,14 +13,14 @@
             --bg-card: #12121a;
             --border-color: #2a2a3a;
             --primary: #7c3aed;
-            --primary-glow: #7c3aed40;
+            --primary-glow: rgba(124, 58, 237, 0.3);
             --accent: #06b6d4;
-            --accent-glow: #06b6d440;
+            --accent-glow: rgba(6, 182, 212, 0.3);
             --text: #e4e4e7;
             --text-muted: #71717a;
             --neo-shadow: 8px 8px 0px var(--border-color);
-            --neo-shadow-accent: 8px 8px 0px var(--accent);
             --neo-shadow-primary: 8px 8px 0px var(--primary);
+            --neo-shadow-accent: 8px 8px 0px var(--accent);
         }
 
         * {
@@ -43,6 +43,49 @@
             padding: 0 24px;
         }
 
+        /* Wave Background */
+        .wave-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(180deg, transparent 0%, var(--primary-glow) 100%);
+            opacity: 0.15;
+            animation: wave 20s linear infinite;
+        }
+
+        .wave:nth-child(2) {
+            background: linear-gradient(180deg, transparent 0%, var(--accent-glow) 100%);
+            opacity: 0.1;
+            animation: wave 15s linear infinite reverse;
+            animation-delay: -5s;
+        }
+
+        .wave:nth-child(3) {
+            background: linear-gradient(180deg, transparent 0%, var(--primary-glow) 100%);
+            opacity: 0.08;
+            animation: wave 25s linear infinite;
+            animation-delay: -10s;
+        }
+
+        @keyframes wave {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(-25%); }
+            100% { transform: translateX(-50%); }
+        }
+
         /* Hero Section */
         .hero {
             min-height: 100vh;
@@ -53,19 +96,7 @@
             text-align: center;
             padding: 80px 24px;
             position: relative;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
+            z-index: 1;
         }
 
         .hero-content {
@@ -78,7 +109,6 @@
             padding: 8px 16px;
             background: var(--bg-card);
             border: 2px solid var(--primary);
-            border-radius: 4px;
             font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
@@ -88,8 +118,8 @@
         }
 
         @keyframes pulse-border {
-            0%, 100% { border-color: var(--primary); }
-            50% { border-color: var(--accent); }
+            0%, 100% { border-color: var(--primary); box-shadow: 0 0 20px var(--primary-glow); }
+            50% { border-color: var(--accent); box-shadow: 0 0 30px var(--accent-glow); }
         }
 
         h1 {
@@ -102,6 +132,7 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             animation: gradient-shift 8s ease-in-out infinite;
+            background-size: 200% 200%;
         }
 
         @keyframes gradient-shift {
@@ -159,58 +190,68 @@
             box-shadow: 12px 12px 0px var(--border-color);
         }
 
-        /* Floating Elements Animation */
-        .floating-elements {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: hidden;
-            z-index: 0;
+        /* Install Command Section */
+        .install-section {
+            padding: 80px 24px;
+            position: relative;
+            z-index: 1;
         }
 
-        .floating-box {
-            position: absolute;
-            border: 2px solid var(--border-color);
+        .install-box {
             background: var(--bg-card);
-            opacity: 0.5;
-            animation: float 6s ease-in-out infinite;
+            border: 2px solid var(--primary);
+            padding: 48px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: var(--neo-shadow-primary);
         }
 
-        .floating-box:nth-child(1) {
-            width: 80px;
-            height: 80px;
-            top: 20%;
-            left: 10%;
-            animation-delay: 0s;
+        .install-box h2 {
+            font-size: 1.5rem;
+            margin-bottom: 24px;
+            color: var(--accent);
         }
 
-        .floating-box:nth-child(2) {
-            width: 60px;
-            height: 60px;
-            top: 60%;
-            right: 15%;
-            animation-delay: 1s;
-            border-color: var(--primary);
+        .command-line {
+            background: #0d0d12;
+            border: 1px solid var(--border-color);
+            padding: 20px 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: #10b981;
+            overflow-x: auto;
+            position: relative;
         }
 
-        .floating-box:nth-child(3) {
-            width: 100px;
-            height: 100px;
-            bottom: 20%;
-            left: 20%;
-            animation-delay: 2s;
-            border-color: var(--accent);
+        .command-line::before {
+            content: '$';
+            color: var(--accent);
+            margin-right: 12px;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(5deg); }
+        .copy-btn {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--border-color);
+            border: none;
+            color: var(--text);
+            padding: 8px 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary);
         }
 
         /* Features Section */
         .features {
             padding: 120px 24px;
+            position: relative;
+            z-index: 1;
         }
 
         .section-title {
@@ -249,7 +290,12 @@
             align-items: center;
             justify-content: center;
             margin-bottom: 24px;
-            font-size: 28px;
+        }
+
+        .feature-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: white;
         }
 
         .feature-card h3 {
@@ -266,6 +312,8 @@
         .models {
             padding: 120px 24px;
             background: var(--bg-card);
+            position: relative;
+            z-index: 1;
         }
 
         .models-grid {
@@ -325,6 +373,8 @@
         .preview {
             padding: 120px 24px;
             text-align: center;
+            position: relative;
+            z-index: 1;
         }
 
         .preview-container {
@@ -438,6 +488,8 @@
         .cta {
             padding: 120px 24px;
             text-align: center;
+            position: relative;
+            z-index: 1;
         }
 
         .cta-box {
@@ -466,6 +518,8 @@
             padding: 48px 24px;
             text-align: center;
             border-top: 1px solid var(--border-color);
+            position: relative;
+            z-index: 1;
         }
 
         footer p {
@@ -477,11 +531,19 @@
             background: var(--bg-card);
             border: 2px dashed var(--border-color);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 300px;
             color: var(--text-muted);
             font-size: 14px;
+            gap: 16px;
+        }
+
+        .image-placeholder svg {
+            width: 48px;
+            height: 48px;
+            fill: var(--border-color);
         }
 
         /* Responsive */
@@ -498,17 +560,28 @@
             .preview-content {
                 padding: 16px;
             }
+
+            .install-box {
+                padding: 24px;
+            }
+
+            .command-line {
+                font-size: 12px;
+                padding: 16px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Wave Background -->
+    <div class="wave-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+
     <!-- Hero Section -->
     <section class="hero">
-        <div class="floating-elements">
-            <div class="floating-box"></div>
-            <div class="floating-box"></div>
-            <div class="floating-box"></div>
-        </div>
         <div class="hero-content">
             <span class="badge">Powered by MiniMax AI</span>
             <h1>Luigi Chat</h1>
@@ -523,38 +596,63 @@
         </div>
     </section>
 
+    <!-- Install Section -->
+    <section class="install-section">
+        <div class="container">
+            <div class="install-box">
+                <h2>Quick Install</h2>
+                <div class="command-line">
+                    curl -fsSL https://docs.chat.luigivis.com/install.sh | bash
+                    <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.textContent.replace('$','').trim())">Copy</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Features Section -->
     <section id="features" class="features">
         <div class="container">
             <h2 class="section-title">Why Luigi Chat?</h2>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">🧠</div>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    </div>
                     <h3>Advanced Reasoning</h3>
                     <p>Powered by MiniMax-M2.7 for complex reasoning and problem-solving tasks with 3x faster responses.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">👁️</div>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                    </div>
                     <h3>Vision Analysis</h3>
                     <p>Upload images and get intelligent analysis with MiniMax-Text-01 vision model.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🎙️</div>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg>
+                    </div>
                     <h3>Speech Synthesis</h3>
                     <p>Convert text to natural speech with MiniMax Speech 2.6 HD technology.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🔑</div>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                    </div>
                     <h3>Secure API Keys</h3>
                     <p>Auto-generated LiteLLM keys with configurable rate limits per user.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🎨</div>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                    </div>
                     <h3>Customizable UI</h3>
                     <p>Dark mode, themes, and personalized settings for every user.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🚀</div>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M13 2.05v3.03c3.39.49 6 3.39 6 6.92 0 .9-.18 1.75-.48 2.54l2.6 1.53c.56-1.24.88-2.62.88-4.07 0-5.18-3.95-9.45-9-9.95zM12 19c-3.87 0-7-3.13-7-7 0-3.53 2.61-6.43 6-6.92V2.05c-5.06.5-9 4.76-9 9.95 0 5.52 4.47 10 9.99 10 3.31 0 6.24-1.61 8.06-4.09l-2.6-1.53C16.17 17.98 14.21 19 12 19z"/></svg>
+                    </div>
                     <h3>Streaming Responses</h3>
                     <p>Real-time AI responses with streaming technology for instant feedback.</p>
                 </div>
@@ -605,8 +703,7 @@
                             <div class="chat-message user">Explain quantum computing in simple terms</div>
                             <div class="chat-message assistant">
                                 Imagine you have a coin that can be both heads AND tails at the same time until you look at it. That's superposition! 
-
-                                In quantum computing, instead of bits that are 0 or 1, we have qubits that can be 0, 1, or both simultaneously. This allows quantum computers to explore many possibilities at once...
+                                In quantum computing, instead of bits that are 0 or 1, we have qubits that can be 0, 1, or both simultaneously.
                             </div>
                         </div>
                         <div class="chat-input">
@@ -625,16 +722,20 @@
             <h2 class="section-title">Screenshots</h2>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 32px;">
                 <div class="image-placeholder">
-                    [Screenshot: Chat Interface - Add chat-interface.png]
+                    <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>[Screenshot: Chat Interface]</span>
                 </div>
                 <div class="image-placeholder">
-                    [Screenshot: Admin Panel - Add admin-panel.png]
+                    <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    <span>[Screenshot: Admin Panel]</span>
                 </div>
                 <div class="image-placeholder">
-                    [Screenshot: Settings - Add settings.png]
+                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                    <span>[Screenshot: Settings]</span>
                 </div>
                 <div class="image-placeholder">
-                    [Screenshot: Voice TTS - Add voice-tts.png]
+                    <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg>
+                    <span>[Screenshot: Voice TTS]</span>
                 </div>
             </div>
         </div>
@@ -663,7 +764,7 @@
     <!-- Footer -->
     <footer>
         <div class="container">
-            <p>&copy; 2026 Luigi Chat. Built with FastAPI, SvelteKit & MiniMax.</p>
+            <p>2026 Luigi Chat. Built with FastAPI, SvelteKit and MiniMax.</p>
         </div>
     </footer>
 
@@ -674,10 +775,10 @@
         const sendBtn = document.querySelector('.chat-input button');
 
         const responses = [
-            "That's an interesting question! Let me think about this carefully...",
-            "Based on my knowledge, I can tell you that this involves several key concepts...",
-            "Great question! Here's what I think...",
-            "I'd be happy to help explain this. The main points are..."
+            "That's an interesting question. Let me think about this carefully...",
+            "Based on my knowledge, this involves several key concepts...",
+            "Great question. Here's my analysis...",
+            "I'd be happy to help explain this in detail..."
         ];
 
         function addMessage(content, type) {
