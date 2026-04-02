@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luigi Chat - AI Chat Interface</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --border-color: #2a2a3a;
+            --primary: #7c3aed;
+            --primary-glow: #7c3aed40;
+            --accent: #06b6d4;
+            --accent-glow: #06b6d440;
+            --text: #e4e4e7;
+            --text-muted: #71717a;
+            --neo-shadow: 8px 8px 0px var(--border-color);
+            --neo-shadow-accent: 8px 8px 0px var(--accent);
+            --neo-shadow-primary: 8px 8px 0px var(--primary);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 80px 24px;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+            animation: pulse-border 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { border-color: var(--primary); }
+            50% { border-color: var(--accent); }
+        }
+
+        h1 {
+            font-size: clamp(3rem, 10vw, 6rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--text) 0%, var(--primary) 50%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-shift 8s ease-in-out infinite;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.1rem, 2vw, 1.5rem);
+            color: var(--text-muted);
+            max-width: 600px;
+            margin-bottom: 48px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 32px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            border: 3px solid var(--text);
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: var(--neo-shadow-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--text);
+            color: var(--bg-dark);
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px var(--border-color);
+        }
+
+        /* Floating Elements Animation */
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .floating-box {
+            position: absolute;
+            border: 2px solid var(--border-color);
+            background: var(--bg-card);
+            opacity: 0.5;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-box:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-box:nth-child(2) {
+            width: 60px;
+            height: 60px;
+            top: 60%;
+            right: 15%;
+            animation-delay: 1s;
+            border-color: var(--primary);
+        }
+
+        .floating-box:nth-child(3) {
+            width: 100px;
+            height: 100px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 2s;
+            border-color: var(--accent);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        /* Features Section */
+        .features {
+            padding: 120px 24px;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            padding: 32px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: var(--neo-shadow);
+            border-color: var(--primary);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            font-size: 28px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+        }
+
+        /* Models Section */
+        .models {
+            padding: 120px 24px;
+            background: var(--bg-card);
+        }
+
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .model-card {
+            background: var(--bg-dark);
+            border: 2px solid var(--border-color);
+            padding: 24px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .model-card:hover {
+            border-color: var(--accent);
+            transform: scale(1.02);
+        }
+
+        .model-badge {
+            position: absolute;
+            top: -12px;
+            right: 16px;
+            background: var(--accent);
+            color: var(--bg-dark);
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .model-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+
+        .model-card p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .model-tag {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 4px 8px;
+            background: var(--border-color);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            border-radius: 2px;
+        }
+
+        /* Preview Section */
+        .preview {
+            padding: 120px 24px;
+            text-align: center;
+        }
+
+        .preview-container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .preview-window {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 16px 16px 0px var(--border-color);
+        }
+
+        .preview-header {
+            background: var(--bg-dark);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .preview-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .preview-dot.red { background: #ef4444; }
+        .preview-dot.yellow { background: #eab308; }
+        .preview-dot.green { background: #22c55e; }
+
+        .preview-content {
+            padding: 32px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 4px;
+            animation: slide-in 0.3s ease;
+        }
+
+        @keyframes slide-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chat-message.user {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+        }
+
+        .chat-message.assistant {
+            align-self: flex-start;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+        }
+
+        .chat-input {
+            margin-top: 16px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            background: var(--bg-dark);
+            border: 2px solid var(--border-color);
+            padding: 12px 16px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input input:focus {
+            border-color: var(--primary);
+        }
+
+        .chat-input button {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chat-input button:hover {
+            background: var(--accent);
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 120px 24px;
+            text-align: center;
+        }
+
+        .cta-box {
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            padding: 64px 32px;
+            position: relative;
+            box-shadow: var(--neo-shadow-primary);
+        }
+
+        .cta-box::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            z-index: -1;
+            filter: blur(20px);
+            opacity: 0.3;
+        }
+
+        /* Footer */
+        footer {
+            padding: 48px 24px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+        }
+
+        footer p {
+            color: var(--text-muted);
+        }
+
+        /* Image Placeholder */
+        .image-placeholder {
+            background: var(--bg-card);
+            border: 2px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 60px 24px;
+            }
+
+            .features-grid,
+            .models-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .preview-content {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="floating-elements">
+            <div class="floating-box"></div>
+            <div class="floating-box"></div>
+            <div class="floating-box"></div>
+        </div>
+        <div class="hero-content">
+            <span class="badge">Powered by MiniMax AI</span>
+            <h1>Luigi Chat</h1>
+            <p class="hero-subtitle">
+                Next-generation AI chat interface with advanced reasoning, vision, and speech synthesis. 
+                Built for developers who demand more.
+            </p>
+            <div class="cta-buttons">
+                <a href="#preview" class="btn btn-primary">See it in Action</a>
+                <a href="#features" class="btn btn-secondary">Explore Features</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Why Luigi Chat?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>Advanced Reasoning</h3>
+                    <p>Powered by MiniMax-M2.7 for complex reasoning and problem-solving tasks with 3x faster responses.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👁️</div>
+                    <h3>Vision Analysis</h3>
+                    <p>Upload images and get intelligent analysis with MiniMax-Text-01 vision model.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎙️</div>
+                    <h3>Speech Synthesis</h3>
+                    <p>Convert text to natural speech with MiniMax Speech 2.6 HD technology.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔑</div>
+                    <h3>Secure API Keys</h3>
+                    <p>Auto-generated LiteLLM keys with configurable rate limits per user.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Customizable UI</h3>
+                    <p>Dark mode, themes, and personalized settings for every user.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Streaming Responses</h3>
+                    <p>Real-time AI responses with streaming technology for instant feedback.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Models Section -->
+    <section class="models">
+        <div class="container">
+            <h2 class="section-title">AI Models</h2>
+            <div class="models-grid">
+                <div class="model-card">
+                    <span class="model-badge">Chat</span>
+                    <h3>Luigi Thinking</h3>
+                    <p>MiniMax-M2.7 for advanced reasoning and conversational AI.</p>
+                    <span class="model-tag">minimax/MiniMax-M2.7</span>
+                </div>
+                <div class="model-card">
+                    <span class="model-badge">Vision</span>
+                    <h3>Luigi Vision</h3>
+                    <p>MiniMax-Text-01 for image analysis and understanding.</p>
+                    <span class="model-tag">minimax/MiniMax-Text-01</span>
+                </div>
+                <div class="model-card">
+                    <span class="model-badge">Voice</span>
+                    <h3>Luigi Voice</h3>
+                    <p>Speech 2.6 HD for natural text-to-speech synthesis.</p>
+                    <span class="model-tag">minimax/speech-2.6-hd</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Preview Section -->
+    <section id="preview" class="preview">
+        <div class="container">
+            <h2 class="section-title">Preview</h2>
+            <div class="preview-container">
+                <div class="preview-window">
+                    <div class="preview-header">
+                        <span class="preview-dot red"></span>
+                        <span class="preview-dot yellow"></span>
+                        <span class="preview-dot green"></span>
+                    </div>
+                    <div class="preview-content">
+                        <div class="chat-messages">
+                            <div class="chat-message user">Explain quantum computing in simple terms</div>
+                            <div class="chat-message assistant">
+                                Imagine you have a coin that can be both heads AND tails at the same time until you look at it. That's superposition! 
+
+                                In quantum computing, instead of bits that are 0 or 1, we have qubits that can be 0, 1, or both simultaneously. This allows quantum computers to explore many possibilities at once...
+                            </div>
+                        </div>
+                        <div class="chat-input">
+                            <input type="text" placeholder="Ask anything...">
+                            <button>Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Screenshots</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 32px;">
+                <div class="image-placeholder">
+                    [Screenshot: Chat Interface - Add chat-interface.png]
+                </div>
+                <div class="image-placeholder">
+                    [Screenshot: Admin Panel - Add admin-panel.png]
+                </div>
+                <div class="image-placeholder">
+                    [Screenshot: Settings - Add settings.png]
+                </div>
+                <div class="image-placeholder">
+                    [Screenshot: Voice TTS - Add voice-tts.png]
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-box">
+                <h2 class="section-title">Ready to Start?</h2>
+                <p class="hero-subtitle" style="margin-bottom: 32px;">
+                    Deploy Luigi Chat on your own infrastructure with Docker.
+                </p>
+                <div class="cta-buttons">
+                    <a href="https://github.com/luigivis/luigi-chat" class="btn btn-primary" target="_blank">
+                        View on GitHub
+                    </a>
+                    <a href="https://github.com/luigivis/luigi-chat/releases" class="btn btn-secondary" target="_blank">
+                        Download
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Luigi Chat. Built with FastAPI, SvelteKit & MiniMax.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Interactive chat preview
+        const input = document.querySelector('.chat-input input');
+        const messages = document.querySelector('.chat-messages');
+        const sendBtn = document.querySelector('.chat-input button');
+
+        const responses = [
+            "That's an interesting question! Let me think about this carefully...",
+            "Based on my knowledge, I can tell you that this involves several key concepts...",
+            "Great question! Here's what I think...",
+            "I'd be happy to help explain this. The main points are..."
+        ];
+
+        function addMessage(content, type) {
+            const msg = document.createElement('div');
+            msg.className = `chat-message ${type}`;
+            msg.textContent = content;
+            messages.appendChild(msg);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        sendBtn?.addEventListener('click', () => {
+            const text = input.value.trim();
+            if (!text) return;
+
+            addMessage(text, 'user');
+            input.value = '';
+
+            setTimeout(() => {
+                const response = responses[Math.floor(Math.random() * responses.length)];
+                addMessage(response, 'assistant');
+            }, 1000);
+        });
+
+        input?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendBtn?.click();
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href'))?.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Intersection Observer for animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.feature-card, .model-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: luigi
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: luigi_chat
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - luigi-network
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass 1234
+    volumes:
+      - redis_data:/data
+    networks:
+      - luigi-network
+
+  litellm:
+    image: ghcr.io/luigivis/luigi-chat-litellm:latest
+    volumes:
+      - ./litellm:/app/config
+    environment:
+      LITELLM_MASTER_KEY: sk-test
+      DATABASE_URL: postgresql://luigi:1234@postgres:5432/luigi_chat
+      REDIS_HOST: redis
+      REDIS_PASSWORD: 1234
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - luigi-network
+
+  backend:
+    image: ghcr.io/luigivis/luigi-chat-backend:latest
+    environment:
+      DATABASE_URL: postgresql+asyncpg://luigi:1234@postgres:5432/luigi_chat
+      REDIS_URL: redis://:1234@redis:6379/0
+      MINIMAX_API_KEY: sk-cp-O7WQE5_u4v2d6vUZNerUhqohy4zDfk53an6maYV3-Dk7t4LKmkUV2knQ-e_Tp1pl3Z3kCoM4K-uIYbDcxFtNQiOoyvFPVdCY9-MuAoqlO6DphBa1CtOXbPU
+      SECRET_KEY: tO7YoODWaXdf06cjNc7P2aDICStGBdprZos4Z6f4E
+      WEBUI_NAME: Luigi Chat
+      ADMIN_EMAIL: luigivis98@gmail.com
+      ADMIN_PASSWORD: 1234
+      LITELLM_MASTER_KEY: sk-test
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+      - litellm
+    networks:
+      - luigi-network
+
+  frontend:
+    image: ghcr.io/luigivis/luigi-chat-frontend:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - luigi-network
+
+networks:
+  luigi-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
