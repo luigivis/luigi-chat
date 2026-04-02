@@ -1,0 +1,138 @@
+version: '3.8'
+
+services:
+  # ===========================================
+  # PostgreSQL Database
+  # ===========================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: luigi-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-luigi_chat}
+      POSTGRES_USER: ${POSTGRES_USER:-luigi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-luigi_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-luigi}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - luigi-network
+
+  # ===========================================
+  # Redis Cache
+  # ===========================================
+  redis:
+    image: redis:7-alpine
+    container_name: luigi-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - luigi-network
+
+  # ===========================================
+  # LiteLLM Proxy (AI Gateway)
+  # ===========================================
+  litellm:
+    build:
+      context: ./litellm
+      dockerfile: Dockerfile
+    container_name: luigi-litellm
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://luigi:luigi_password@postgres:5432/litellm}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      MINIMAX_API_KEY: ${MINIMAX_API_KEY}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-dev-key}
+      LITELLM_LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - luigi-network
+
+  # ===========================================
+  # Backend FastAPI
+  # ===========================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: luigi-backend
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-luigi}:${POSTGRES_PASSWORD:-luigi_password}@postgres:5432/${POSTGRES_DB:-luigi_chat}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-dev-key}
+      MINIMAX_API_KEY: ${MINIMAX_API_KEY}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-change-in-production}
+      WEBUI_NAME: ${WEBUI_NAME:-Luigi Chat}
+      LITELLM_PROXY_URL: ${LITELLM_PROXY_URL:-http://litellm:4000}
+      MINIMAX_API_BASE_URL: ${MINIMAX_API_BASE_URL:-https://api.minimax.io}
+      DEFAULT_RPM_LIMIT: ${DEFAULT_RPM_LIMIT:-3}
+      DEFAULT_TPM_LIMIT: ${DEFAULT_TPM_LIMIT:-6000}
+      DEBUG: ${DEBUG:-true}
+    volumes:
+      - ./backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      litellm:
+        condition: service_started
+    networks:
+      - luigi-network
+
+  # ===========================================
+  # Frontend SvelteKit
+  # ===========================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: luigi-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:8080}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - luigi-network
+
+# ===========================================
+# Volumes
+# ===========================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ===========================================
+# Networks
+# ===========================================
+networks:
+  luigi-network:
+    driver: bridge
