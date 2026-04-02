@@ -23,17 +23,41 @@ Rebuild de OpenWebUI con integración MiniMax y LiteLLM.
 
 ## Inicio Rápido
 
-### 1. Configurar Variables de Entorno
+### Opción 1: Instalación Completa (Produccón)
+
+Usa `install.sh` para configurar todo con Docker images pre-construidas:
 
 ```bash
-cp .env.example .env
-# Editar .env con tus credenciales
+./install.sh
+docker-compose up -d
 ```
 
-### 2. Levantar Servicios
+### Opción 2: Desarrollo Local
+
+Usa `install-local.sh` para desarrollar con código local:
 
 ```bash
-docker-compose up -d
+./install-local.sh
+```
+
+Luego inicia los servicios manualmente:
+
+```bash
+# Terminal 1: Backend
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8080
+
+# Terminal 2: Frontend
+cd frontend
+npm install
+npm run dev
+```
+
+O inicia todo con Docker:
+
+```bash
+docker-compose -f docker-compose.local.yaml up
 ```
 
 ### 3. Acceder a la Aplicación

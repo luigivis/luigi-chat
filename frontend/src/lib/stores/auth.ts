@@ -1,6 +1,10 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
+const API_URL = typeof import.meta.env.VITE_PUBLIC_API_URL !== 'undefined' 
+    ? import.meta.env.VITE_PUBLIC_API_URL 
+    : 'http://localhost:8080';
+
 export interface User {
 	id: string;
 	email: string;
@@ -36,7 +40,7 @@ function createAuthStore() {
 		async login(email: string, password: string) {
 			update((state) => ({ ...state, loading: true }));
 			try {
-				const response = await fetch(`${import.meta.env.PUBLIC_API_URL}/api/auth/login`, {
+				const response = await fetch(`${API_URL}/api/auth/login`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ email, password })
@@ -53,7 +57,7 @@ function createAuthStore() {
 					localStorage.setItem('refreshToken', data.refresh_token);
 				}
 
-				const userResponse = await fetch(`${import.meta.env.PUBLIC_API_URL}/api/auth/me`, {
+				const userResponse = await fetch(`${API_URL}/api/auth/me`, {
 					headers: { Authorization: `Bearer ${data.access_token}` }
 				});
 
@@ -75,7 +79,7 @@ function createAuthStore() {
 		async signup(email: string, password: string) {
 			update((state) => ({ ...state, loading: true }));
 			try {
-				const response = await fetch(`${import.meta.env.PUBLIC_API_URL}/api/auth/signup`, {
+				const response = await fetch(`${API_URL}/api/auth/signup`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ email, password })
@@ -131,7 +135,7 @@ export async function loadUser() {
 	}
 
 	try {
-		const response = await fetch(`${import.meta.env.PUBLIC_API_URL}/api/auth/me`, {
+		const response = await fetch(`${API_URL}/api/auth/me`, {
 			headers: { Authorization: `Bearer ${token}` }
 		});
 

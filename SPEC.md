@@ -1307,5 +1307,117 @@ test('complete chat flow', async ({ page }) => {
 
 ---
 
+---
+
+## 17. Guía de Uso
+
+### 17.1 Login como Admin
+
+**Endpoint:** `POST /api/auth/login`
+
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@example.com", "password": "tu-password"}'
+```
+
+**Respuesta exitosa:**
+```json
+{
+  "access_token": "eyJ...",
+  "refresh_token": "eyJ...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "user": {
+    "id": "uuid",
+    "email": "admin@example.com",
+    "role": "admin",
+    "theme": "dark",
+    "primary_color": "#7000FF"
+  }
+}
+```
+
+**Usando el frontend:**
+1. Navega a `http://localhost:3000/auth/login`
+2. Ingresa el email y password configurados durante `install.sh`
+3. Serás redirigido al chat principal
+
+**Credenciales por defecto (si se usaron los valores default):**
+- Email: `admin@example.com`
+- Password: La que configuraste durante la instalación
+
+### 17.2 Roles y Permisos
+
+| Rol | Permisos |
+|-----|----------|
+| `admin` | CRUD all users, view all chats, manage API keys, view spend logs |
+| `user` | CRUD own chats, use chat, view own stats |
+
+### 17.3 Endpoints de Frontend
+
+| Ruta | Descripción |
+|------|-------------|
+| `/auth/login` | Página de login |
+| `/auth/signup` | Página de registro |
+| `/` | Chat principal |
+| `/workspace/settings` | Configuración de usuario |
+| `/admin/users` | Panel de administración (solo admin) |
+
+### 17.4 Solución de Problemas
+
+**Error 404 en login:**
+- Verifica que el backend esté corriendo en el puerto 8080
+- Verifica que `VITE_PUBLIC_API_URL` en `.env` apunte a `http://localhost:8080`
+
+**Error "undefined" en la URL:**
+- Asegúrate de que el archivo `.env` usa el prefijo `VITE_` (ej: `VITE_PUBLIC_API_URL=http://localhost:8080`)
+- Reinicia el servidor de desarrollo después de cambios en `.env`
+
+**Token expirado:**
+- El access token expira en 1 hora
+- Usa `POST /api/auth/refresh` para obtener un nuevo token
+
+---
+
+## 18. SEO
+
+### 18.1 Meta Tags por Página
+
+**Login (`/auth/login`):**
+```html
+<title>Sign In - Luigi Chat</title>
+<meta name="description" content="Sign in to your Luigi Chat account..." />
+<meta name="robots" content="noindex, nofollow" />
+```
+
+**Signup (`/auth/signup`):**
+```html
+<title>Sign Up - Luigi Chat</title>
+<meta name="description" content="Create your Luigi Chat account..." />
+<meta name="robots" content="noindex, nofollow" />
+```
+
+### 18.2 Open Graph y Twitter Cards
+
+Todas las páginas públicas incluyen:
+- `og:title`, `og:description`, `og:type`
+- `twitter:card`, `twitter:title`, `twitter:description`
+
+### 18.3 Robots
+
+Las páginas de auth (`/auth/login`, `/auth/signup`) tienen `noindex, nofollow` para evitarindexación de motores de búsqueda.
+
+---
+
+## 19. Variables de Entorno Frontend
+
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `VITE_PUBLIC_API_URL` | `http://localhost:8080` | URL del backend API |
+| `VITE_PUBLIC_APP_FONT` | Sistema default | Font principal de la app |
+
+---
+
 **Versión**: 1.0.0
 **Última actualización**: 2026-04-02

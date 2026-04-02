@@ -233,7 +233,7 @@ LITELLM_MAX_PARALLEL_REQUESTS=100
 
 # MiniMax
 MINIMAX_API_KEY=${MINIMAX_API_KEY}
-MINIMAX_API_BASE_URL=https://api.minimax.chat
+MINIMAX_API_BASE_URL=https://api.minimax.io
 
 # Admin
 ADMIN_USERNAME=${ADMIN_USER}
@@ -245,7 +245,7 @@ DEFAULT_RPM_LIMIT=3
 DEFAULT_TPM_LIMIT=6000
 
 # Frontend
-PUBLIC_API_URL=http://localhost:8080
+VITE_PUBLIC_API_URL=http://localhost:8080
 EOF
 
 # Create docker-compose override
@@ -266,6 +266,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-postgres.sh:/docker-entrypoint-initdb.d/init-luigi-db.sh:ro
     networks:
       - ${DOCKER_NETWORK}
 
@@ -444,6 +445,26 @@ volumes:
   postgres_data:
   redis_data:
 EOF
+
+# Create scripts directory
+echo ""
+echo "Creating scripts directory..."
+mkdir -p scripts
+
+# Create PostgreSQL init script
+echo "Creating PostgreSQL init script..."
+cat > scripts/init-postgres.sh << 'EOF'
+#!/bin/bash
+set -e
+
+# Create LiteLLM database if it doesn't exist
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    SELECT 'CREATE DATABASE luigi' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'luigi');
+    CREATE DATABASE luigi;
+EOSQL
+EOF
+
+chmod +x scripts/init-postgres.sh
 
 # Create Docker network
 echo ""

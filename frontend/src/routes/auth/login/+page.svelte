@@ -26,6 +26,18 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Sign In - Luigi Chat</title>
+	<meta name="description" content="Sign in to your Luigi Chat account to access AI-powered chat with MiniMax models." />
+	<meta name="robots" content="noindex, nofollow" />
+	<meta property="og:title" content="Sign In - Luigi Chat" />
+	<meta property="og:description" content="Access your Luigi Chat account and start chatting with AI models." />
+	<meta property="og:type" content="website" />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content="Sign In - Luigi Chat" />
+	<meta name="twitter:description" content="Sign in to your Luigi Chat account." />
+</svelte:head>
+
 <div class="min-h-screen flex items-center justify-center bg-gray-900 px-4">
 	<div class="max-w-md w-full space-y-8">
 		<div class="text-center">
