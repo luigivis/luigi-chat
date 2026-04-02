@@ -41,8 +41,8 @@
 
 - [x] `backend/app/services/litellm.py` - Wrapper LiteLLM client
 - [x] `backend/app/services/minimax.py` - MiniMax API client
-- [ ] `backend/app/services/file_service.py` - File upload/download
-- [ ] `backend/app/services/audio_service.py` - TTS service
+- [x] `backend/app/services/file_service.py` - File upload/download (integrado en routers/files.py)
+- [x] `backend/app/services/audio_service.py` - TTS service (integrado en routers/audio.py)
 
 ## Fase 6: LiteLLM Configuration
 
