@@ -7,13 +7,11 @@ echo "  Luigi Chat - Installation Script"
 echo "=============================================="
 echo ""
 
-# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Default values
 DEFAULT_SYSTEM_NAME="Luigi Chat"
 DEFAULT_POSTGRES_USER="luigi"
 DEFAULT_POSTGRES_DB="luigi_chat"
@@ -22,7 +20,97 @@ DEFAULT_IMAGE_BACKEND="ghcr.io/luigivis/luigi-chat-backend:latest"
 DEFAULT_IMAGE_FRONTEND="ghcr.io/luigivis/luigi-chat-frontend:latest"
 DEFAULT_IMAGE_LITELLM="ghcr.io/luigivis/luigi-chat-litellm:latest"
 
-# Questions
+check_docker() {
+    if ! command -v docker &> /dev/null; then
+        echo "${RED}Docker is not installed${NC}"
+        echo "Please install Docker to continue"
+        exit 1
+    fi
+    
+    if ! docker info &> /dev/null; then
+        echo "${RED}Docker daemon is not running${NC}"
+        echo "Please start Docker and try again"
+        exit 1
+    fi
+    
+    if docker compose version &> /dev/null; then
+        DOCKER_COMPOSE="docker compose"
+    elif command -v docker-compose &> /dev/null; then
+        DOCKER_COMPOSE="docker-compose"
+    else
+        echo "${RED}Docker Compose is not installed${NC}"
+        echo "Please install Docker Compose to continue"
+        exit 1
+    fi
+    
+    echo "${GREEN}Docker: OK${NC}"
+    echo "${GREEN}Docker Compose: OK ($DOCKER_COMPOSE)${NC}"
+    echo ""
+}
+
+check_running_containers() {
+    echo "=============================================="
+    echo "  Checking Existing Services"
+    echo "=============================================="
+    echo ""
+    
+    local running_count=0
+    local total_count=0
+    
+    for service in postgres redis litellm backend frontend; do
+        total_count=$((total_count + 1))
+        if ${DOCKER_COMPOSE} -f docker-compose.override.yaml ps $service 2>/dev/null | grep -qE "(Up|running)"; then
+            running_count=$((running_count + 1))
+            echo "${YELLOW}$service is already running${NC}"
+        fi
+    done
+    
+    if [ $running_count -gt 0 ]; then
+        echo ""
+        echo "${YELLOW}Found $running_count running services${NC}"
+        read -p "Do you want to stop them before continuing? [y/N]: " STOP_SERVICES
+        if [[ "$STOP_SERVICES" =~ ^[Yy]$ ]]; then
+            echo "Stopping services..."
+            ${DOCKER_COMPOSE} -f docker-compose.override.yaml down
+            echo "${GREEN}Services stopped${NC}"
+        else
+            echo "${YELLOW}Skipping...${NC}"
+        fi
+    fi
+    
+    echo ""
+}
+
+show_container_logs() {
+    local container=$1
+    echo ""
+    echo "${RED}========== $container Logs ==========${NC}"
+    ${DOCKER_COMPOSE} -f docker-compose.override.yaml logs --tail=50 "$container" 2>&1
+}
+
+cleanup_failed() {
+    echo ""
+    echo "${RED}Some containers failed to start${NC}"
+    echo ""
+    
+    local failed=$(${DOCKER_COMPOSE} -f docker-compose.override.yaml ps --filter "status=restarting" --filter "status=exited" --format "{{.Name}}" 2>/dev/null)
+    
+    for container in $failed; do
+        echo ""
+        echo "${RED}=== $container ===${NC}"
+        ${DOCKER_COMPOSE} -f docker-compose.override.yaml logs --tail=30 "$container" 2>&1 | tail -20
+    done
+    
+    echo ""
+    echo "To clean up and retry:"
+    echo "  docker compose -f docker-compose.override.yaml down"
+    echo "  ./install.sh"
+}
+
+echo "=============================================="
+echo "  System Configuration"
+echo "=============================================="
+echo ""
 read -p "System name [$DEFAULT_SYSTEM_NAME]: " SYSTEM_NAME
 SYSTEM_NAME=${SYSTEM_NAME:-$DEFAULT_SYSTEM_NAME}
 
@@ -184,8 +272,9 @@ if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-# Create .env file
-echo ""
+check_docker
+check_running_containers
+
 echo "Creating .env file..."
 cat > .env << EOF
 # ================================================
@@ -248,15 +337,11 @@ DEFAULT_TPM_LIMIT=6000
 VITE_PUBLIC_API_URL=http://localhost:8080
 EOF
 
-# Create docker-compose override
 echo ""
 echo "Creating docker-compose.override.yaml..."
 
 if [ "$USE_DOCKER_POSTGRES" = true ] && [ "$USE_DOCKER_REDIS" = true ]; then
-    # Full local setup
     cat > docker-compose.override.yaml << EOF
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
@@ -269,6 +354,11 @@ services:
       - ./scripts/init-postgres.sh:/docker-entrypoint-initdb.d/init-luigi-db.sh:ro
     networks:
       - ${DOCKER_NETWORK}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
@@ -277,6 +367,11 @@ services:
       - redis_data:/data
     networks:
       - ${DOCKER_NETWORK}
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   litellm:
     image: ${IMAGE_LITELLM}
@@ -288,16 +383,15 @@ services:
       REDIS_HOST: redis
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - ${DOCKER_NETWORK}
 EOF
 elif [ "$USE_DOCKER_POSTGRES" = true ]; then
-    # Local postgres, external redis
     cat > docker-compose.override.yaml << EOF
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
@@ -307,8 +401,14 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-postgres.sh:/docker-entrypoint-initdb.d/init-luigi-db.sh:ro
     networks:
       - ${DOCKER_NETWORK}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   litellm:
     image: ${IMAGE_LITELLM}
@@ -320,15 +420,13 @@ services:
       REDIS_HOST: ${REDIS_URL#*@}
       REDIS_PASSWORD: ${REDIS_URL%%@*}
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - ${DOCKER_NETWORK}
 EOF
 elif [ "$USE_DOCKER_REDIS" = true ]; then
-    # External postgres, local redis
     cat > docker-compose.override.yaml << EOF
-version: '3.8'
-
 services:
   redis:
     image: redis:7-alpine
@@ -337,6 +435,11 @@ services:
       - redis_data:/data
     networks:
       - ${DOCKER_NETWORK}
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   litellm:
     image: ${IMAGE_LITELLM}
@@ -348,15 +451,13 @@ services:
       REDIS_HOST: redis
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     networks:
       - ${DOCKER_NETWORK}
 EOF
 else
-    # Both external
     cat > docker-compose.override.yaml << EOF
-version: '3.8'
-
 services:
   litellm:
     image: ${IMAGE_LITELLM}
@@ -371,7 +472,6 @@ services:
 EOF
 fi
 
-# Add backend and frontend with or without port exposure
 if [[ "$EXPOSE_PORTS" =~ ^[Yy]$ ]]; then
     cat >> docker-compose.override.yaml << EOF
 
@@ -434,7 +534,6 @@ else
 EOF
 fi
 
-# Add network and volumes at the end
 cat >> docker-compose.override.yaml << EOF
 
 networks:
@@ -446,18 +545,14 @@ volumes:
   redis_data:
 EOF
 
-# Create scripts directory
-echo ""
 echo "Creating scripts directory..."
 mkdir -p scripts
 
-# Create PostgreSQL init script
 echo "Creating PostgreSQL init script..."
 cat > scripts/init-postgres.sh << 'EOF'
 #!/bin/bash
 set -e
 
-# Create LiteLLM database if it doesn't exist
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     SELECT 'CREATE DATABASE luigi' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'luigi');
     CREATE DATABASE luigi;
@@ -466,29 +561,156 @@ EOF
 
 chmod +x scripts/init-postgres.sh
 
-# Create Docker network
-echo ""
 echo "Creating Docker network..."
-docker network create ${DOCKER_NETWORK} 2>/dev/null || echo "Network already exists or docker not available"
+docker network create ${DOCKER_NETWORK} 2>/dev/null || echo "Network already exists"
 
 echo ""
 echo "=============================================="
-echo "${GREEN}Installation Complete!${NC}"
+echo "${GREEN}Starting Services${NC}"
 echo "=============================================="
+echo ""
+
+${DOCKER_COMPOSE} -f docker-compose.override.yaml up -d
+
+wait_for_all_services() {
+    local max_attempts=60
+    local attempt=1
+    local services="postgres redis litellm backend frontend"
+    
+    while [ $attempt -le $max_attempts ]; do
+        local all_healthy=true
+        
+        for service in $services; do
+            local status=$(${DOCKER_COMPOSE} -f docker-compose.override.yaml ps "$service" --format "{{.Status}}" 2>/dev/null || echo "not found")
+            
+            if echo "$status" | grep -qE "(Up|healthy|running|exited)"; then
+                echo "  ${GREEN}[OK]${NC} $service"
+            else
+                all_healthy=false
+                echo "  ${YELLOW}[WAIT]${NC} $service ($status)"
+            fi
+        done
+        
+        if $all_healthy; then
+            echo ""
+            echo "${GREEN}All services started!${NC}"
+            return 0
+        fi
+        
+        echo "  Attempt $attempt/$max_attempts... waiting 3s"
+        sleep 3
+        attempt=$((attempt + 1))
+    done
+    
+    echo ""
+    echo "${RED}Timeout waiting for services${NC}"
+    return 1
+}
+
+echo "Waiting for all services..."
+echo ""
+
+if ! wait_for_all_services; then
+    echo ""
+    echo "${RED}========== Service Logs ==========${NC}"
+    echo ""
+    for service in postgres redis litellm backend frontend; do
+        echo "${RED}=== $service ===${NC}"
+        ${DOCKER_COMPOSE} -f docker-compose.override.yaml logs --tail=30 "$service" 2>&1
+        echo ""
+    done
+    
+    echo ""
+    echo "${RED}======================================${NC}"
+    echo "${RED}   INSTALLATION FAILED${NC}"
+    echo "${RED}======================================${NC}"
+    echo ""
+    echo "To clean up and retry:"
+    echo "  docker compose -f docker-compose.override.yaml down -v"
+    echo "  ./install.sh"
+    exit 1
+fi
+
+    echo ""
+    echo "=============================================="
+    echo "${GREEN}Installation Complete!${NC}"
+    echo "=============================================="
+    echo ""
+
+create_admin_if_needed() {
+    echo ""
+    echo "=============================================="
+    echo "  Creating Admin User"
+    echo "=============================================="
+    echo ""
+    
+    if [[ "$EXPOSE_PORTS" =~ ^[Yy]$ ]]; then
+        BACKEND_URL="http://localhost:8080"
+    else
+        BACKEND_URL="http://backend:8080"
+    fi
+    
+    echo "Waiting for backend to be ready..."
+    local max_attempts=30
+    local attempt=1
+    while [ $attempt -le $max_attempts ]; do
+        if curl -s "$BACKEND_URL/health" > /dev/null 2>&1; then
+            echo "Backend is ready!"
+            break
+        fi
+        echo "  Attempt $attempt/$max_attempts... waiting 2s"
+        sleep 2
+        attempt=$((attempt + 1))
+    done
+    
+    if [ $attempt -gt $max_attempts ]; then
+        echo "${YELLOW}Backend not ready, skipping admin creation${NC}"
+        return
+    fi
+    
+    echo ""
+    echo "Creating admin user..."
+    
+    ADMIN_RESPONSE=$(curl -s -X POST "$BACKEND_URL/api/auth/signup" \
+        -H "Content-Type: application/json" \
+        -d "{\"email\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\"}" 2>&1)
+    
+    if echo "$ADMIN_RESPONSE" | grep -q "api_key"; then
+        echo "${GREEN}Admin user created successfully!${NC}"
+        
+        echo ""
+        echo "NOTE: The signup creates a user with 'user' role."
+        echo "To make it admin, update the database:"
+        echo "  docker compose -f docker-compose.override.yaml exec postgres psql -U $POSTGRES_USER -d $POSTGRES_DB -c \"UPDATE users SET role='admin' WHERE email='$ADMIN_EMAIL';\""
+    else
+        if echo "$ADMIN_RESPONSE" | grep -q "already registered"; then
+            echo "${YELLOW}Admin user already exists${NC}"
+        else
+            echo "${YELLOW}Admin creation response: $ADMIN_RESPONSE${NC}"
+        fi
+    fi
+}
+
+if [[ "$EXPOSE_PORTS" =~ ^[Yy]$ ]]; then
+    create_admin_if_needed
+fi
+
+echo ""
+echo "Service Status:"
+${DOCKER_COMPOSE} -f docker-compose.override.yaml ps
+
 echo ""
 echo "Next steps:"
 echo ""
 if [[ "$EXPOSE_PORTS" =~ ^[Yy]$ ]]; then
-    echo "1. Run: docker-compose up -d"
-    echo "2. Access the application at:"
+    echo "1. Access the application at:"
     echo "   - Frontend: http://localhost:3000"
     echo "   - Backend:  http://localhost:8080"
     echo "   - API Docs: http://localhost:8080/docs"
 else
-    echo "1. Run: docker-compose up -d"
-    echo "2. The application is only accessible via the docker network."
+    echo "1. The application is only accessible via the docker network."
     echo "   You can shell into a container to access it:"
-    echo "   - docker-compose exec frontend sh"
+    echo "   - docker compose exec frontend sh"
 fi
 echo ""
 echo "Admin login:"

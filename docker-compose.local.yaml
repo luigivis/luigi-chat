@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: luigi
+      POSTGRES_PASSWORD: nbGsOiNJ6WEe1qPIFPKgK2IHkEZAEE
+      POSTGRES_DB: luigi_chat
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-postgres.sh:/docker-entrypoint-initdb.d/init-luigi-db.sh:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - luigi-local
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U luigi"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass nbGsOiNJ6WEe1qPIFPKgK2IHkEZAEE
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - luigi-local
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "nbGsOiNJ6WEe1qPIFPKgK2IHkEZAEE", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  litellm:
+    build:
+      context: ./litellm
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      LITELLM_MASTER_KEY: sk-test
+      DATABASE_URL: postgresql://luigi:nbGsOiNJ6WEe1qPIFPKgK2IHkEZAEE@postgres:5432/luigi
+      REDIS_HOST: redis
+      REDIS_PASSWORD: nbGsOiNJ6WEe1qPIFPKgK2IHkEZAEE
+      MINIMAX_API_KEY: sk-cp-O7WQE5_u4v2d6vUZNerUhqohy4zDfk53an6maYV3-Dk7t4LKmkUV2knQ-e_Tp1pl3Z3kCoM4K-uIYbDcxFtNQiOoyvFPVdCY9-MuAoqlO6DphBa1CtOXbPU
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml
+    networks:
+      - luigi-local
+
+networks:
+  luigi-local:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

@@ -37,3 +37,6 @@ async def get_db():
             yield session
         finally:
             await session.close()
+
+
+from app.models.database import User, Chat, Message, File, Folder

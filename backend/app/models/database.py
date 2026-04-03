@@ -3,11 +3,10 @@ Luigi Chat - Database Models
 """
 from sqlalchemy import Column, String, Boolean, Integer, DateTime, Text, ForeignKey, ARRAY
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship
+from app.models import Base
 from datetime import datetime
 import uuid
-
-Base = declarative_base()
 
 
 class User(Base):

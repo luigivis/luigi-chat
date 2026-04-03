@@ -136,9 +136,11 @@ class LiteLLMService:
         model: str,
         messages: list,
         stream: bool = False
-    ) -> Dict[str, Any]:
-        """Make a chat completion request through LiteLLM"""
-        async with httpx.AsyncClient() as client:
+    ):
+        """Make a chat completion request through LiteLLM.
+        Returns a dict for non-streaming, or an async generator for streaming.
+        """
+        async with httpx.AsyncClient(timeout=120.0) as client:
             try:
                 response = await client.post(
                     f"{self.base_url}/v1/chat/completions",
@@ -150,11 +152,21 @@ class LiteLLMService:
                         "model": model,
                         "messages": messages,
                         "stream": stream
-                    },
-                    timeout=120.0
+                    }
                 )
                 response.raise_for_status()
-                return response.json()
+                
+                if stream:
+                    async def stream_lines():
+                        for line in response.text.split('\n'):
+                            if line.startswith("data: "):
+                                yield line[6:]
+                            elif line.startswith("data:"):
+                                yield line[5:]
+                    return stream_lines()
+                else:
+                    return response.json()
+                        
             except httpx.HTTPError as e:
                 logger.error(f"Error in chat completion: {e}")
                 raise

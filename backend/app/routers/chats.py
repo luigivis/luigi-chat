@@ -307,19 +307,17 @@ async def send_message(
         
         if request.stream:
             assistant_content = ""
-            for line in response.iter_lines():
-                if line.startswith("data: "):
-                    data = line[6:]
-                    if data == "[DONE]":
-                        break
-                    try:
-                        chunk = json.loads(data)
-                        if chunk.get("choices"):
-                            delta = chunk["choices"][0].get("delta", {})
-                            if delta.get("content"):
-                                assistant_content += delta["content"]
-                    except:
-                        pass
+            async for data in response:
+                if data == "[DONE]":
+                    break
+                try:
+                    chunk = json.loads(data)
+                    if chunk.get("choices"):
+                        delta = chunk["choices"][0].get("delta", {})
+                        if delta.get("content"):
+                            assistant_content += delta["content"]
+                except:
+                    pass
             
             assistant_message = Message(
                 chat_id=chat_id,

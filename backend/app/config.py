@@ -1,13 +1,15 @@
 """
 Luigi Chat - Configuration Management
 """
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 import os
 
 
 class Settings(BaseSettings):
     """Application settings from environment variables"""
+    
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=True, extra='ignore')
     
     # App Info
     WEBUI_NAME: str = "Luigi Chat"
@@ -48,10 +50,6 @@ class Settings(BaseSettings):
     DEFAULT_VOICE_ID: str = "male-qn-qingse"
     DEFAULT_SPEECH_SPEED: float = 1.0
     DEFAULT_SPEECH_EMOTION: str = "neutral"
-    
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
 
 
 settings = Settings()
